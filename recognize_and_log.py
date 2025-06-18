@@ -6,12 +6,10 @@ import pandas as pd
 from datetime import datetime
 from threading import Thread
 from insightface.app import FaceAnalysis
-from utils.anti_spoof_predictor import AntiSpoofPredictor
 import os
 
 # Constants
 THRESHOLD = 0.6
-LIVENESS_THRESHOLD = 0.35
 ATTENDANCE_CSV = "attendance_log.csv"
 ATTENDANCE_TIME_LIMIT = datetime.strptime("09:30:00", "%H:%M:%S").time()
 
@@ -25,10 +23,9 @@ if os.path.exists(ATTENDANCE_CSV):
 else:
     attendance_log = []
 
-# InsightFace & Spoof Detector
+# InsightFace Setup
 app = FaceAnalysis(name="buffalo_l", providers=['CPUExecutionProvider'])
 app.prepare(ctx_id=0, det_size=(640, 640))
-spoof_detector = AntiSpoofPredictor("anti_spoof_models/4_0_0_80x80_MiniFASNetV1SE.pth")
 
 # Cosine Similarity
 def cosine_similarity(a, b):
@@ -74,15 +71,6 @@ def process_frame(frame, faces, today_logs):
         x2, y2 = min(frame.shape[1], bbox[2]), min(frame.shape[0], bbox[3])
         face_crop = frame[y1:y2, x1:x2]
         if face_crop.size == 0:
-            continue
-
-        live_score = spoof_detector.predict(face_crop)
-        if isinstance(live_score, np.ndarray):
-            live_score = float(live_score)
-
-        if live_score < LIVENESS_THRESHOLD:
-            draw_fancy_face_box(frame, (x1, y1, x2, y2), color=(0, 0, 255))
-            message = "Spoof Detected"
             continue
 
         emb = face.embedding
