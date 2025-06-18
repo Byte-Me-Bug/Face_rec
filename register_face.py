@@ -7,15 +7,12 @@ from sklearn.metrics.pairwise import cosine_similarity
 from insightface.app import FaceAnalysis
 from utils.anti_spoof_predictor import AntiSpoofPredictor
 
-# Initialize MediaPipe face detector
 mp_face_detection = mp.solutions.face_detection
 mp_drawing = mp.solutions.drawing_utils
 
-# Initialize InsightFace for embedding
 embedder = FaceAnalysis(name="buffalo_l", providers=["CPUExecutionProvider"])
 embedder.prepare(ctx_id=0, det_size=(640, 640))
 
-# Initialize anti-spoofing
 spoof_detector = AntiSpoofPredictor("anti_spoof_models/4_0_0_80x80_MiniFASNetV1SE.pth")
 
 def register_face(emp_name):
