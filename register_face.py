@@ -5,15 +5,12 @@ import numpy as np
 import mediapipe as mp
 from sklearn.metrics.pairwise import cosine_similarity
 from insightface.app import FaceAnalysis
-from utils.anti_spoof_predictor import AntiSpoofPredictor
 
 mp_face_detection = mp.solutions.face_detection
 mp_drawing = mp.solutions.drawing_utils
 
 embedder = FaceAnalysis(name="buffalo_l", providers=["CPUExecutionProvider"])
 embedder.prepare(ctx_id=0, det_size=(640, 640))
-
-spoof_detector = AntiSpoofPredictor("anti_spoof_models/4_0_0_80x80_MiniFASNetV1SE.pth")
 
 def register_face(emp_name):
     cap = cv2.VideoCapture(0)
@@ -58,12 +55,6 @@ def register_face(emp_name):
     face_crop = frame[y1:y2, x1:x2]
     if face_crop.size == 0:
         print("[ERROR] Cropped face is empty.")
-        return
-
-    live_score = spoof_detector.predict(face_crop)
-    print(f"[INFO] Live confidence score: {float(live_score):.4f}")
-    if live_score < 0.80:
-        print("[WARNING] Spoof detected! Registration aborted.")
         return
 
     faces = embedder.get(frame)
